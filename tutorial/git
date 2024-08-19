@@ -1,0 +1,22 @@
+Setup :
+git config --global user.name “[firstname lastname]”
+git config --global user.email “[valid-email]”
+git config --global color.ui auto
+
+---
+
+Create Repository:
+
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/7hamdy/e-commerce.git
+git push -u origin main
+
+---
+
+add new Change :
+git add .
+git commit -m "[descriptive message]"
+git push -u origin
