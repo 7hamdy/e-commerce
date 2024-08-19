@@ -76,9 +76,9 @@ exports.updateCategory = asyncHandler(async (req, res) => {
   }
   res.json({ Message: "Category Updated Successfully", data: updateData });
 });
-//@Desc Delete Category
-//@routes Delete api/v1/categories/:id
-//@access private
+// @Desc Delete Category
+// @routes Delete api/v1/categories/:id
+// @access private
 exports.deleteCategory = asyncHandler(async (req, res) => {
   const id = req.params.id;
   const deleteData = await categoryModel.findByIdAndDelete({ _id: id });
