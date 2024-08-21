@@ -13,15 +13,36 @@ db_connection();
 
 const createUser = require("./routes/userRoutes.js");
 const createCart = require("./routes/cartRoutes.js");
+const apiError = require("./utils/apiError.js");
 
 const categoryRoute = require("./routes/categoryRoutes.js");
 
 const morgan = require("morgan");
 app.use(morgan("dev"));
 
-app.use("/api/v1/create", createUser);
-app.use("/api/v1/cart", createCart);
+// app.use("/api/v1/create", createUser);
+// app.use("/api/v1/cart", createCart);
 app.use("/api/v1/categories", categoryRoute);
+
+// #create error and send it to error handling middleware
+app.all("*", (req, res, next) => {
+  // const error = new Error(`cant find this route : ${req.originalUrl}`);
+  // next (err.message);
+  next(new apiError(`cant find this route : ${req.originalUrl}`, 400));
+});
+
+//Global Error Handling middleware
+app.use((err, req, res, next) => {
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || "error";
+
+  res.status(err.statusCode).json({
+    error: err,
+    status: err.status,
+    message: err.message,
+    stack: process.env.NODE_ENV === "development" ? err.stack : null,
+  });
+});
 
 const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV === "development") {
