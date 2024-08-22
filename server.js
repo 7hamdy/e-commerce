@@ -1,25 +1,38 @@
 const express = require("express");
 const slugify = require("slugify");
 const dotenv = require("dotenv").config({ path: "./config.env" });
+const apiError = require("./utils/apiError.js");
+
 const app = express();
 
 // Middleware to parse JSON
 app.use(express.json());
+
 // Middleware to parse URL-encoded data (form data)
 app.use(express.urlencoded({ extended: true }));
 
+// DB Connection
 const db_connection = require("./config/db.js");
 db_connection();
 
-const createUser = require("./routes/userRoutes.js");
-const createCart = require("./routes/cartRoutes.js");
-const apiError = require("./utils/apiError.js");
+const PORT = process.env.PORT || 3000;
+if (process.env.NODE_ENV === "development") {
+  console.log(`Prsocess Node Environment: ${process.env.NODE_ENV}`);
+}
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+// const createUser = require("./routes/userRoutes.js");
+// const createCart = require("./routes/cartRoutes.js");
 
 const categoryRoute = require("./routes/categoryRoutes.js");
+const errorMiddleware = require("./middleware/errorMiddleware.js");
 
 const morgan = require("morgan");
 app.use(morgan("dev"));
 
+// Routes
 // app.use("/api/v1/create", createUser);
 // app.use("/api/v1/cart", createCart);
 app.use("/api/v1/categories", categoryRoute);
@@ -32,26 +45,17 @@ app.all("*", (req, res, next) => {
 });
 
 //Global Error Handling middleware
-app.use((err, req, res, next) => {
-  err.statusCode = err.statusCode || 500;
-  err.status = err.status || "error";
+app.use(errorMiddleware);
 
-  res.status(err.statusCode).json({
-    error: err,
-    status: err.status,
-    message: err.message,
-    stack: process.env.NODE_ENV === "development" ? err.stack : null,
+// Handle rejection outside express
+process.on("unhandledRejection", (err) => {
+  console.error(`unhandled rejection Error : ${err.name} | ${err.message}`);
+
+  server.close(() => {
+    console.error("Server is closing down...");
+    process.exit(1); // Exit with failure status code
   });
 });
-
-const PORT = process.env.PORT || 3000;
-if (process.env.NODE_ENV === "development") {
-  console.log(`Prsocess Node Environment: ${process.env.NODE_ENV}`);
-}
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
 app.get("/", (req, res) => {
   res.send("Welcome");
 });
